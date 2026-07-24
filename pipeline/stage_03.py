@@ -112,7 +112,7 @@ def eval_single_precision(bits: int):
 
     ppl = evaluate_perplexity(recon_model, input_ids, seq_len=seq_len)
     mem_profiler = upr.MemoryProfiler()
-    mem_stats = mem_profiler.record_memory_snapshot(bits, fast_dir, f"{RESULTS_DIR}/memory.csv")
+    mem_stats = mem_profiler.record_memory_snapshot(bits, fast_dir, f"{RESULTS_DIR}/memory.csv", total_planes=16)
 
     del recon_model
     gc.collect()

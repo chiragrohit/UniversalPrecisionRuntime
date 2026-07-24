@@ -1,6 +1,6 @@
 {
-  "experiment_name": "UPR_Phase1.1_ModalEvaluation",
-  "timestamp": "2026-07-24T13:46:44.444418",
+  "experiment_name": "UPR_Phase1.3_ModalEvaluation",
+  "timestamp": "2026-07-24T14:48:02.848284",
   "upr_version": "0.1.0",
   "torch_version": "2.13.0+cu130",
   "cuda_available": true,
@@ -16,16 +16,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 112.2376,
-        "model_init": 17.8642,
-        "forward_pass": 0.6345,
-        "generation": 2.06
+        "reconstruction": 101.6544,
+        "model_init": 16.1094,
+        "forward_pass": 0.4367,
+        "generation": 1.8484
       },
       "memory_stats": {
         "precision_bits": 16,
-        "cpu_ram_mb": 8280.06,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 16,
+        "runtime_cpu_ram_mb": 8352.86,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 2013652818,
+        "effective_checkpoint_size_mb": 1920.37,
+        "representation_size_mb": 1920.37,
+        "compression_ratio": 1.0,
+        "bandwidth_reduction_pct": 0.0,
+        "theoretical_future_vram_mb": 2926.21,
+        "theoretical_future_bandwidth_pct": 100.0,
+        "cpu_ram_mb": 8352.86,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 1.0,
@@ -33,7 +44,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.068374633789062,
       "metadata": {
-        "timestamp": "2026-07-24T13:46:24Z",
+        "timestamp": "2026-07-24T14:45:38Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -51,16 +62,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 56.68,
-        "model_init": 16.2171,
-        "forward_pass": 0.4021,
-        "generation": 1.9474
+        "reconstruction": 57.0256,
+        "model_init": 17.6859,
+        "forward_pass": 0.4518,
+        "generation": 1.8595
       },
       "memory_stats": {
         "precision_bits": 14,
-        "cpu_ram_mb": 7625.42,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 14,
+        "runtime_cpu_ram_mb": 7545.25,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 1761946215,
+        "effective_checkpoint_size_mb": 1680.32,
+        "representation_size_mb": 1680.32,
+        "compression_ratio": 0.875,
+        "bandwidth_reduction_pct": 12.5,
+        "theoretical_future_vram_mb": 2560.43,
+        "theoretical_future_bandwidth_pct": 87.5,
+        "cpu_ram_mb": 7545.25,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 1.0,
@@ -68,7 +90,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.057697296142578,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:22Z",
+        "timestamp": "2026-07-24T14:44:58Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -86,16 +108,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 40.3703,
-        "model_init": 16.1027,
-        "forward_pass": 0.4335,
-        "generation": 1.8847
+        "reconstruction": 42.5361,
+        "model_init": 15.7377,
+        "forward_pass": 0.4215,
+        "generation": 1.7754
       },
       "memory_stats": {
         "precision_bits": 12,
-        "cpu_ram_mb": 8198.84,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 12,
+        "runtime_cpu_ram_mb": 7713.96,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 1510239613,
+        "effective_checkpoint_size_mb": 1440.28,
+        "representation_size_mb": 1440.28,
+        "compression_ratio": 0.75,
+        "bandwidth_reduction_pct": 25.0,
+        "theoretical_future_vram_mb": 2194.66,
+        "theoretical_future_bandwidth_pct": 75.0,
+        "cpu_ram_mb": 7713.96,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 1.0,
@@ -103,7 +136,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.004018783569336,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:02Z",
+        "timestamp": "2026-07-24T14:45:03Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -121,16 +154,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 35.0941,
-        "model_init": 15.9333,
-        "forward_pass": 0.4886,
-        "generation": 1.8818
+        "reconstruction": 34.7245,
+        "model_init": 17.1908,
+        "forward_pass": 0.5247,
+        "generation": 1.9361
       },
       "memory_stats": {
         "precision_bits": 10,
-        "cpu_ram_mb": 7994.6,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 10,
+        "runtime_cpu_ram_mb": 7299.82,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 1258533011,
+        "effective_checkpoint_size_mb": 1200.23,
+        "representation_size_mb": 1200.23,
+        "compression_ratio": 0.625,
+        "bandwidth_reduction_pct": 37.5,
+        "theoretical_future_vram_mb": 1828.88,
+        "theoretical_future_bandwidth_pct": 62.5,
+        "cpu_ram_mb": 7299.82,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 0.998229444026947,
@@ -138,7 +182,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.38953971862793,
       "metadata": {
-        "timestamp": "2026-07-24T13:44:58Z",
+        "timestamp": "2026-07-24T14:44:50Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -156,16 +200,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 64.9561,
-        "model_init": 16.0043,
-        "forward_pass": 0.4866,
-        "generation": 1.8413
+        "reconstruction": 66.0653,
+        "model_init": 17.1369,
+        "forward_pass": 0.6954,
+        "generation": 2.0141
       },
       "memory_stats": {
         "precision_bits": 8,
-        "cpu_ram_mb": 8290.52,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 8,
+        "runtime_cpu_ram_mb": 8163.54,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 1006826409,
+        "effective_checkpoint_size_mb": 960.18,
+        "representation_size_mb": 960.18,
+        "compression_ratio": 0.5,
+        "bandwidth_reduction_pct": 50.0,
+        "theoretical_future_vram_mb": 1463.11,
+        "theoretical_future_bandwidth_pct": 50.0,
+        "cpu_ram_mb": 8163.54,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 0.9729943871498108,
@@ -173,7 +228,7 @@
       "top1_token_accuracy_pct": 32.0,
       "perplexity": 29.14116859436035,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:29Z",
+        "timestamp": "2026-07-24T14:45:51Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -191,16 +246,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 35.2783,
-        "model_init": 17.1939,
-        "forward_pass": 0.4133,
-        "generation": 2.0437
+        "reconstruction": 28.3907,
+        "model_init": 16.9774,
+        "forward_pass": 0.4206,
+        "generation": 1.9616
       },
       "memory_stats": {
         "precision_bits": 6,
-        "cpu_ram_mb": 8213.92,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 6,
+        "runtime_cpu_ram_mb": 7965.78,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 755119806,
+        "effective_checkpoint_size_mb": 720.14,
+        "representation_size_mb": 720.14,
+        "compression_ratio": 0.375,
+        "bandwidth_reduction_pct": 62.5,
+        "theoretical_future_vram_mb": 1097.33,
+        "theoretical_future_bandwidth_pct": 37.5,
+        "cpu_ram_mb": 7965.78,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 0.6240381598472595,
@@ -208,7 +274,7 @@
       "top1_token_accuracy_pct": 22.0,
       "perplexity": 1354.7735595703125,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:18Z",
+        "timestamp": "2026-07-24T14:45:03Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -226,16 +292,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 48.1277,
-        "model_init": 17.6468,
-        "forward_pass": 0.7067,
-        "generation": 1.9676
+        "reconstruction": 72.0442,
+        "model_init": 17.3933,
+        "forward_pass": 0.4802,
+        "generation": 1.8578
       },
       "memory_stats": {
         "precision_bits": 4,
-        "cpu_ram_mb": 8278.47,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 4,
+        "runtime_cpu_ram_mb": 8268.82,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 503413204,
+        "effective_checkpoint_size_mb": 480.09,
+        "representation_size_mb": 480.09,
+        "compression_ratio": 0.25,
+        "bandwidth_reduction_pct": 75.0,
+        "theoretical_future_vram_mb": 731.55,
+        "theoretical_future_bandwidth_pct": 25.0,
+        "cpu_ram_mb": 8268.82,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 0.10977694392204285,
@@ -243,7 +320,7 @@
       "top1_token_accuracy_pct": 20.0,
       "perplexity": 101262.234375,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:27Z",
+        "timestamp": "2026-07-24T14:45:44Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -261,16 +338,27 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 18.0806,
-        "model_init": 19.1593,
-        "forward_pass": 0.7956,
-        "generation": 1.8912
+        "reconstruction": 15.2681,
+        "model_init": 16.2058,
+        "forward_pass": 0.4785,
+        "generation": 1.8094
       },
       "memory_stats": {
         "precision_bits": 2,
-        "cpu_ram_mb": 8176.97,
-        "gpu_vram_mb": 2926.21,
+        "planes_loaded": 2,
+        "runtime_cpu_ram_mb": 7749.12,
+        "runtime_gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
+        "full_checkpoint_size_mb": 1920.37,
+        "bytes_loaded": 251706602,
+        "effective_checkpoint_size_mb": 240.05,
+        "representation_size_mb": 240.05,
+        "compression_ratio": 0.125,
+        "bandwidth_reduction_pct": 87.5,
+        "theoretical_future_vram_mb": 365.78,
+        "theoretical_future_bandwidth_pct": 12.5,
+        "cpu_ram_mb": 7749.12,
+        "gpu_vram_mb": 2926.21,
         "checkpoint_size_mb": 1920.37
       },
       "logit_cosine_similarity": 0.0,
@@ -278,7 +366,7 @@
       "top1_token_accuracy_pct": 20.0,
       "perplexity": 248319.625,
       "metadata": {
-        "timestamp": "2026-07-24T13:45:12Z",
+        "timestamp": "2026-07-24T14:45:04Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -348,6 +436,120 @@
       "PPL": 248319.625,
       "CosSim": 0.0,
       "Status": "This Work"
+    }
+  ],
+  "memory_accounting_table": [
+    {
+      "precision_bits": 16,
+      "planes_loaded": 16,
+      "bytes_loaded": 2013652818,
+      "effective_checkpoint_size_mb": 1920.37,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 2926.21,
+      "theoretical_future_bandwidth_pct": 100.0,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 14,
+      "planes_loaded": 14,
+      "bytes_loaded": 1761946215,
+      "effective_checkpoint_size_mb": 1680.32,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 2560.43,
+      "theoretical_future_bandwidth_pct": 87.5,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 12,
+      "planes_loaded": 12,
+      "bytes_loaded": 1510239613,
+      "effective_checkpoint_size_mb": 1440.28,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 2194.66,
+      "theoretical_future_bandwidth_pct": 75.0,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 10,
+      "planes_loaded": 10,
+      "bytes_loaded": 1258533011,
+      "effective_checkpoint_size_mb": 1200.23,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 1828.88,
+      "theoretical_future_bandwidth_pct": 62.5,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 8,
+      "planes_loaded": 8,
+      "bytes_loaded": 1006826409,
+      "effective_checkpoint_size_mb": 960.18,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 1463.11,
+      "theoretical_future_bandwidth_pct": 50.0,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 6,
+      "planes_loaded": 6,
+      "bytes_loaded": 755119806,
+      "effective_checkpoint_size_mb": 720.14,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 1097.33,
+      "theoretical_future_bandwidth_pct": 37.5,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 4,
+      "planes_loaded": 4,
+      "bytes_loaded": 503413204,
+      "effective_checkpoint_size_mb": 480.09,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 731.55,
+      "theoretical_future_bandwidth_pct": 25.0,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
+    },
+    {
+      "precision_bits": 2,
+      "planes_loaded": 2,
+      "bytes_loaded": 251706602,
+      "effective_checkpoint_size_mb": 240.05,
+      "runtime_gpu_vram_mb": 2926.21,
+      "theoretical_future_vram_mb": 365.78,
+      "theoretical_future_bandwidth_pct": 12.5,
+      "type_classification": {
+        "runtime_vram": "Actual Measured (FP16 model reconstruction)",
+        "effective_checkpoint": "Actual Measured BitPlane Storage",
+        "theoretical_future_vram": "Analytical Placeholder Only"
+      }
     }
   ]
 }

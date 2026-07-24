@@ -9,11 +9,14 @@ $files = @(
     "results/tensor_sensitivity.csv",
     "results/error_propagation.csv",
     "results/correlation_matrix.csv",
-    "results/representation_statistics.csv"
+    "results/representation_statistics.csv",
+    "results/upr_evaluation_report.json",
+    "results/variable_precision_summary.json",
+    "results/memory.csv"
 )
 
 foreach ($f in $files) {
     Write-Host "Downloading $f ..."
-    modal volume get upr-data-vol $f $f
+    modal volume get upr-data-vol $f $f --force
 }
 Write-Host "Done!"

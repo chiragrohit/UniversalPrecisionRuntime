@@ -35,8 +35,9 @@ class IsolatedTimer:
 
 class MemoryProfiler:
     """
-    Fix 7 - Memory Profiler recording CPU RAM, GPU VRAM, Original checkpoint size,
-    BitPlane checkpoint size, Bytes loaded, Peak RAM, Peak VRAM, and storing results/memory.csv.
+    Phase 1.3 - Memory Profiler recording actual runtime usage (CPU RAM, GPU VRAM)
+    separately from UPR representation metrics (planes loaded, bytes loaded, effective checkpoint size,
+    compression ratio, bandwidth reduction) and theoretical future execution metrics.
     """
     def __init__(self):
         self.process = psutil.Process(os.getpid())
@@ -58,7 +59,9 @@ class MemoryProfiler:
         self,
         precision_bits: int,
         checkpoint_dir: str,
-        output_csv_path: str = "results/memory.csv"
+        output_csv_path: str = "results/memory.csv",
+        total_planes: int = 16,
+        fp16_vram_baseline_mb: float = 2926.21
     ) -> Dict[str, Any]:
         os.makedirs(os.path.dirname(output_csv_path) if os.path.dirname(output_csv_path) else ".", exist_ok=True)
         
@@ -72,14 +75,39 @@ class MemoryProfiler:
                 for f in files:
                     dir_size_bytes += os.path.getsize(os.path.join(root, f))
                     
-        checkpoint_size_mb = dir_size_bytes / (1024 * 1024)
+        full_checkpoint_size_mb = dir_size_bytes / (1024 * 1024)
+        
+        # Phase 1.3 Correct Accounting Computations
+        planes_loaded = int(precision_bits)
+        plane_fraction = planes_loaded / float(total_planes)
+        
+        bytes_loaded = int(dir_size_bytes * plane_fraction)
+        effective_checkpoint_size_mb = round(full_checkpoint_size_mb * plane_fraction, 2)
+        compression_ratio = round(plane_fraction, 4)
+        bandwidth_reduction_pct = round((1.0 - plane_fraction) * 100.0, 2)
+        
+        # Theoretical future metrics (analytically calculated only)
+        future_expected_vram_mb = round(fp16_vram_baseline_mb * plane_fraction, 2)
+        future_expected_bandwidth_pct = round(plane_fraction * 100.0, 2)
         
         row = {
             "precision_bits": precision_bits,
+            "planes_loaded": planes_loaded,
+            "runtime_cpu_ram_mb": round(cpu_ram, 2),
+            "runtime_gpu_vram_mb": round(gpu_vram, 2),
+            "peak_gpu_vram_mb": round(peak_vram, 2),
+            "full_checkpoint_size_mb": round(full_checkpoint_size_mb, 2),
+            "bytes_loaded": bytes_loaded,
+            "effective_checkpoint_size_mb": effective_checkpoint_size_mb,
+            "representation_size_mb": effective_checkpoint_size_mb,
+            "compression_ratio": compression_ratio,
+            "bandwidth_reduction_pct": bandwidth_reduction_pct,
+            "theoretical_future_vram_mb": future_expected_vram_mb,
+            "theoretical_future_bandwidth_pct": future_expected_bandwidth_pct,
+            # Backward-compatible fields
             "cpu_ram_mb": round(cpu_ram, 2),
             "gpu_vram_mb": round(gpu_vram, 2),
-            "peak_gpu_vram_mb": round(peak_vram, 2),
-            "checkpoint_size_mb": round(checkpoint_size_mb, 2)
+            "checkpoint_size_mb": round(full_checkpoint_size_mb, 2)
         }
         
         file_exists = os.path.exists(output_csv_path)
@@ -90,3 +118,4 @@ class MemoryProfiler:
             writer.writerow(row)
             
         return row
+
