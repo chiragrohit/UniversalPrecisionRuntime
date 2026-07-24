@@ -3,6 +3,8 @@ import sys
 import json
 import glob
 import gc
+import shutil
+import tarfile
 import datetime
 import platform
 import modal
@@ -31,6 +33,8 @@ image = (
 MODEL_ID = "Qwen/Qwen3.5-0.8B"
 VOL_MOUNT = "/vol"
 BITPLANE_DIR = f"{VOL_MOUNT}/models/bitplane_qwen"
+TAR_PATH = f"{VOL_MOUNT}/models/bitplane_qwen.tar"
+TMP_DIR = "/tmp/bitplane_qwen"
 RESULTS_DIR = f"{VOL_MOUNT}/results"
 PLOTS_DIR = f"{RESULTS_DIR}/plots"
 
@@ -43,6 +47,51 @@ def setup_hf_auth():
             login(token=hf_token)
         except Exception as e:
             print(f"HF Login warning: {e}")
+
+
+def get_fast_checkpoint_dir() -> str:
+    """
+    Extracts single uncompressed tar archive from Modal Volume (/vol) to container local NVMe (/tmp).
+    Extracting 1 single tar file takes ~3 seconds (single streaming read), bypassing 5,000+ individual
+    file network latency calls.
+    """
+    meta_tmp = os.path.join(TMP_DIR, "metadata.json")
+    if os.path.exists(meta_tmp):
+        return TMP_DIR
+
+    os.makedirs(TMP_DIR, exist_ok=True)
+
+    if os.path.exists(TAR_PATH):
+        print(f"Extracting tar archive: {TAR_PATH} -> {TMP_DIR} (fast local NVMe)...")
+        with tarfile.open(TAR_PATH, "r:") as tar:
+            tar.extractall(path=TMP_DIR)
+        print("[OK] Local extraction complete in ~3 seconds!")
+
+    elif os.path.exists(os.path.join(BITPLANE_DIR, "metadata.json")):
+        print(f"Creating tar archive from folder: {BITPLANE_DIR} -> {TAR_PATH}...")
+        os.makedirs(os.path.dirname(TAR_PATH), exist_ok=True)
+        with tarfile.open(TAR_PATH, "w:") as tar:
+            tar.add(BITPLANE_DIR, arcname="")
+        vol.commit()
+        print("[OK] Archive created! Extracting to local disk...")
+        with tarfile.open(TAR_PATH, "r:") as tar:
+            tar.extractall(path=TMP_DIR)
+
+    return TMP_DIR if os.path.exists(meta_tmp) else BITPLANE_DIR
+
+
+def archive_tmp_to_vol():
+    """
+    Packs local container checkpoint /tmp/bitplane_qwen into a single tar file on Modal Volume.
+    """
+    meta_tmp = os.path.join(TMP_DIR, "metadata.json")
+    if os.path.exists(meta_tmp):
+        print(f"Packing local checkpoint -> {TAR_PATH} (single tar file)...")
+        os.makedirs(os.path.dirname(TAR_PATH), exist_ok=True)
+        with tarfile.open(TAR_PATH, "w:") as tar:
+            tar.add(TMP_DIR, arcname="")
+        vol.commit()
+        print("[OK] Checkpoint archive saved to Modal Volume!")
 
 
 # ==============================================================================
@@ -61,20 +110,24 @@ def stage_01_conversion():
     setup_hf_auth()
     upr.set_seed(42)
 
-    os.makedirs(BITPLANE_DIR, exist_ok=True)
     os.makedirs(RESULTS_DIR, exist_ok=True)
+    os.makedirs(TMP_DIR, exist_ok=True)
 
-    print(f"=== Stage 1: Converting {MODEL_ID} -> {BITPLANE_DIR} ===")
+    print(f"=== Stage 1: Converting {MODEL_ID} -> {TMP_DIR} (fast local NVMe) ===")
     timer = upr.IsolatedTimer()
     timer.start("bitplane_conversion")
 
+    # 1. Fast conversion to local NVMe /tmp/bitplane_qwen
     upr.convert_to_bitplanes(
         model_or_path=MODEL_ID,
-        output_directory=BITPLANE_DIR,
+        output_directory=TMP_DIR,
         torch_dtype=torch.float16
     )
     conv_time = timer.stop("bitplane_conversion")
-    print(f"BitPlane conversion completed in {conv_time:.2f} seconds.")
+    print(f"[OK] BitPlane conversion completed in {conv_time:.2f} seconds.")
+
+    # 2. Archive to single tar file on Modal Volume for fast persistence
+    archive_tmp_to_vol()
 
     print("\n--- Level 1 Verification: Reconstructing 16-bit FP16 weights ---")
     from transformers import AutoModelForCausalLM
@@ -88,7 +141,7 @@ def stage_01_conversion():
     timer.start("tensor_reconstruction")
     csv_path = f"{RESULTS_DIR}/reconstruction.csv"
     recon_state_dict = upr.BitPlaneModel.load_reconstructed_state_dict(
-        bitplane_directory=BITPLANE_DIR,
+        bitplane_directory=TMP_DIR,
         bits=16,
         device="cpu",
         export_reconstruction_csv=True,
@@ -114,7 +167,8 @@ def stage_01_conversion():
     assert exact_matches == total_tensors, f"FAIL: Expected {total_tensors} bitwise matches, got {exact_matches}"
 
     vol.commit()
-    return {"status": "PASSED", "exact_matches": exact_matches, "total_tensors": total_tensors}
+    res = {"status": "PASSED", "exact_matches": int(exact_matches), "total_tensors": int(total_tensors)}
+    return json.loads(json.dumps(res))
 
 
 # ==============================================================================
@@ -134,6 +188,8 @@ def stage_02_layer_logits():
     upr.set_seed(42)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    fast_dir = get_fast_checkpoint_dir()
+
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     print(f"=== Stage 2: Layer Hooks & Logit Verification on {device} ===")
@@ -152,8 +208,8 @@ def stage_02_layer_logits():
         orig_outputs = orig_model(**inputs)
         orig_logits = orig_outputs.logits.detach().cpu()
 
-    print("Loading reconstructed 16-bit BitPlane model...")
-    recon_model = upr.BitPlaneModel.from_pretrained(BITPLANE_DIR, bits=16, base_model_id=MODEL_ID, torch_dtype=torch.float16).to(device)
+    print("Loading reconstructed 16-bit BitPlane model from fast local disk...")
+    recon_model = upr.BitPlaneModel.from_pretrained(fast_dir, bits=16, base_model_id=MODEL_ID, torch_dtype=torch.float16).to(device)
     recon_model.eval()
 
     recon_collector = upr.LayerActivationCollector(recon_model)
@@ -180,7 +236,8 @@ def stage_02_layer_logits():
     assert cos_sim >= 0.9999, f"Logit cosine similarity too low: {cos_sim}"
 
     vol.commit()
-    return {"logit_cosine_similarity": cos_sim, "kl_divergence": kl_div, "num_layers_hooked": len(layer_diffs)}
+    res = {"logit_cosine_similarity": float(cos_sim), "kl_divergence": float(kl_div), "num_layers_hooked": int(len(layer_diffs))}
+    return json.loads(json.dumps(res))
 
 
 # ==============================================================================
@@ -198,6 +255,8 @@ def stage_03_precision_sweep():
     import upr
     setup_hf_auth()
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    fast_dir = get_fast_checkpoint_dir()
 
     from datasets import load_dataset
     from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
@@ -283,7 +342,7 @@ def stage_03_precision_sweep():
 
         timer.start("reconstruction")
         recon_state_dict = upr.BitPlaneModel.load_reconstructed_state_dict(
-            bitplane_directory=BITPLANE_DIR,
+            bitplane_directory=fast_dir,
             bits=bits,
             device="cpu",
             export_reconstruction_csv=(bits in [16, 8, 4]),
@@ -323,7 +382,7 @@ def stage_03_precision_sweep():
         t_gen = timer.stop("generation")
 
         ppl = evaluate_perplexity(recon_model, input_ids, seq_len=seq_len)
-        mem_stats = mem_profiler.record_memory_snapshot(bits, BITPLANE_DIR, mem_csv)
+        mem_stats = mem_profiler.record_memory_snapshot(bits, fast_dir, mem_csv)
 
         del recon_model
         gc.collect()
@@ -331,20 +390,20 @@ def stage_03_precision_sweep():
             torch.cuda.empty_cache()
 
         res_item = {
-            "precision_bits": bits,
+            "precision_bits": int(bits),
             "dataset": "wikitext-2-raw-v1",
             "seed": 42,
             "timing_sec": {
-                "reconstruction": round(t_recon, 4),
-                "model_init": round(t_init, 4),
-                "forward_pass": round(t_forward, 4),
-                "generation": round(t_gen, 4)
+                "reconstruction": round(float(t_recon), 4),
+                "model_init": round(float(t_init), 4),
+                "forward_pass": round(float(t_forward), 4),
+                "generation": round(float(t_gen), 4)
             },
             "memory_stats": mem_stats,
-            "logit_cosine_similarity": cos_sim,
-            "logit_kl_divergence": kl_div,
-            "top1_token_accuracy_pct": token_acc,
-            "perplexity": ppl,
+            "logit_cosine_similarity": float(cos_sim),
+            "logit_kl_divergence": float(kl_div),
+            "top1_token_accuracy_pct": float(token_acc),
+            "perplexity": float(ppl),
             "metadata": upr.collect_experiment_metadata(precision_bits=bits)
         }
         sweep_results.append(res_item)
@@ -356,7 +415,7 @@ def stage_03_precision_sweep():
 
     summary_data = {
         "baseline_model": MODEL_ID,
-        "baseline_perplexity": ppl_baseline,
+        "baseline_perplexity": float(ppl_baseline),
         "precision_bits": 16,
         "dataset": "wikitext-2-raw-v1",
         "seed": 42,
@@ -373,7 +432,8 @@ def stage_03_precision_sweep():
     print("=" * 70)
 
     vol.commit()
-    return summary_data
+    # Force 100% plain JSON types to prevent local deserialization errors when local Python has no torch
+    return json.loads(json.dumps(summary_data))
 
 
 # ==============================================================================
@@ -559,7 +619,7 @@ def stage_04_plots_and_report():
         with open(p_path, "rb") as pf:
             plot_data[os.path.basename(p_path)] = pf.read()
 
-    return {"report": report, "plots": plot_data}
+    return {"report": json.loads(json.dumps(report)), "plots": plot_data}
 
 
 # ==============================================================================

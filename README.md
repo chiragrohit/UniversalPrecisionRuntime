@@ -6,19 +6,19 @@
 
 ## What is UPR?
 
-Current inference systems require separate checkpoints for each precision:
+Current LLM inference systems require separate checkpoints for each precision level:
 
 ```
-FP16 Model  →  stored separately
-INT8 Model  →  stored separately
-INT4 Model  →  stored separately
-AWQ Model   →  stored separately
+FP16 Model  →  stored separately (~1.4 GB)
+INT8 Model  →  stored separately (~0.7 GB)
+INT4 Model  →  stored separately (~0.35 GB)
+AWQ Model   →  stored separately (~0.35 GB)
 ```
 
 UPR proposes a single **BitPlane representation**: every FP16 weight tensor is decomposed into 16 bit-planes (`plane15.bin` → `plane0.bin`). At runtime, only the top-N bit-planes are loaded and reconstructed, producing a model at any desired precision — from a single checkpoint.
 
 ```
-BitPlane Checkpoint (one, stored once on Modal Volume)
+BitPlane Checkpoint (single .tar archive stored once on Modal Volume)
          │
          ├── plane15 (MSB)
          ├── plane14
@@ -27,23 +27,71 @@ BitPlane Checkpoint (one, stored once on Modal Volume)
                 │
                 ▼
      Reconstruct at runtime:
-     16-bit  = all 16 planes  (exact FP16)
-     8-bit   = top 8 planes
-     4-bit   = top 4 planes
-     2-bit   = top 2 planes
+     16-bit  = all 16 planes  (exact FP16 match)
+     8-bit   = top 8 planes   (50% storage)
+     4-bit   = top 4 planes   (25% storage)
+     2-bit   = top 2 planes   (12.5% storage)
 ```
 
 ---
 
-## Project Status
+## The 4 Pipeline Stages (`modal_app.py`)
 
-**Phase 1.1 — Evaluation Audit & Infrastructure Fixes**
+The pipeline runs remotely on **Modal Labs** using an NVIDIA T4 GPU:
+
+```
+                  ┌───────────────────────────────────────────────────────────┐
+                  │ 1. modal run modal_app.py                                  │
+                  └───────────────────────────────────────────────────────────┘
+                                                │
+                                                ▼
+┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Stage 1: BitPlane Conversion & 16-Bit Verification                                            │
+│ • Downloads Qwen3.5-0.8B FP16 baseline model.                                                 │
+│ • Decomposes all 321 weight tensors into 16 binary bit-planes on fast local NVMe (/tmp).      │
+│ • Archives to a single bitplane_qwen.tar file on Modal Volume for fast persistence.           │
+│ • Reconstructs all 16 bits and verifies 100% exact bitwise match (torch.equal == True).       │
+│ • Exports per-tensor reconstruction metrics to results/reconstruction.csv.                    │
+└───────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                │
+                                                ▼
+┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Stage 2: Layer Activation Hooks & Logit Verification                                          │
+│ • Attaches forward hooks (LayerActivationCollector) to all Transformer blocks.                │
+│ • Runs prompt through original FP16 model and reconstructed 16-bit BitPlane model.            │
+│ • Verifies intermediate layer activations and logit similarity (Cosine Sim >= 0.9999).       │
+└───────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                │
+                                                ▼
+┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Stage 3: Variable Precision Sweep & WikiText Perplexity                                       │
+│ • Sets deterministic seed (upr.set_seed(42)) before every step.                               │
+│ • Sweeps precision levels: 16 → 14 → 12 → 10 → 8 → 6 → 4 → 2 bits.                           │
+│ • Measures isolated phase timings (IsolatedTimer) and memory stats (MemoryProfiler).          │
+│ • Evaluates WikiText-2 language model perplexity (PPL) per precision level.                   │
+│ • Saves results/{N}bit.json and results/variable_precision_summary.json.                      │
+└───────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                │
+                                                ▼
+┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Stage 4: Dark-Mode Plots & Evaluation Report                                                  │
+│ • Validates result schemas and verifies cosine bounds (-1.0 to 1.0).                          │
+│ • Generates 8 dark-mode plots (01_ppl_vs_bits.png through 08_time_vs_ppl.png).                │
+│ • Builds competitive comparison table (UPR vs FP16 / AWQ / GPTQ published numbers).           │
+│ • Exports results/upr_evaluation_report.json.                                                 │
+│ • Automatically downloads all plots and reports back to your local results/ folder.           │
+└───────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Project Audit & Infrastructure Fixes (Phase 1.1)
 
 Every reported metric is **100% mathematically valid, deterministic, and auditable**.
 
 | Fix | Description | Status |
 |-----|-------------|--------|
-| Fix 1 | Cosine similarity bug — bounds assertion + verified `F.cosine_similarity` | ✅ |
+| Fix 1 | Cosine similarity bug — bounds assertion + L2 vector norm dot product | ✅ |
 | Fix 2 | Numerical validation framework (MAE, RMSE, KL, MRE) | ✅ |
 | Fix 3 | Layer-wise activation comparison via forward hooks | ✅ |
 | Fix 5 | Per-tensor reconstruction CSV export | ✅ |
@@ -53,7 +101,75 @@ Every reported metric is **100% mathematically valid, deterministic, and auditab
 | Fix 9 | Deterministic WikiText-2 evaluation (fixed prompt, tokenizer, generation params) | ✅ |
 | Fix 10 | `set_seed(42)` before every precision sweep step | ✅ |
 | Fix 11/12 | Unified JSON schema with dataset, seed, git commit, GPU, metadata fields | ✅ |
-| Modal Migration | Native serverless Modal execution on NVIDIA GPU with `modal.Volume` and `hf-token` secret | ✅ |
+| Modal Migration | Native serverless Modal execution on NVIDIA T4 GPU with tar archive volume storage | ✅ |
+
+---
+
+## How to Run on Modal
+
+### 1. Prerequisites
+
+Ensure Modal CLI is authenticated:
+```bash
+modal setup
+```
+
+Ensure your Hugging Face token is saved in Modal Secrets as `hf-token`:
+```bash
+modal secret create hf-token HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+### 2. Run All 4 Stages (Single Command)
+
+In **PowerShell**:
+```powershell
+$env:PYTHONUTF8=1; modal run modal_app.py
+```
+
+In **CMD**:
+```cmd
+set PYTHONUTF8=1 && modal run modal_app.py
+```
+
+### 3. Run a Specific Stage
+
+You can also run an individual stage using `--stage`:
+
+```bash
+modal run modal_app.py --stage 1    # Stage 1: Conversion & Level 1 Verification
+modal run modal_app.py --stage 2    # Stage 2: Layer Activation Hooks & Logit Similarity
+modal run modal_app.py --stage 3    # Stage 3: 16..2 Bit Precision Sweep & WikiText PPL
+modal run modal_app.py --stage 4    # Stage 4: Plots & Final Report
+```
+
+---
+
+## Persistent Data Storage (`upr-data-vol`)
+
+All persistent data is stored in a **Modal Volume** (`upr-data-vol`) mounted at `/vol`:
+
+```
+Modal Volume (/vol)
+├── models/
+│   └── bitplane_qwen.tar                  ← Fast single tar archive of BitPlane checkpoint
+└── results/
+    ├── reconstruction.csv                  ← Per-tensor MAE, RMSE, CosSim, exact match
+    ├── memory.csv                          ← Per-precision CPU RAM, GPU VRAM, checkpoint size
+    ├── 16bit.json ... 2bit.json            ← Individual precision metrics
+    ├── variable_precision_summary.json     ← Full 8-precision sweep summary
+    ├── upr_evaluation_report.json          ← Complete evaluation report
+    └── plots/                              ← 8 publication-ready dark-mode plots
+        ├── 01_ppl_vs_bits.png              ← Perplexity vs precision
+        ├── 02_cosine_vs_bits.png           ← Logit Cosine Sim vs precision
+        ├── 03_top1_acc_vs_bits.png          ← Token Accuracy vs precision
+        ├── 04_recon_time_vs_bits.png       ← Reconstruction Time vs precision
+        ├── 05_ppl_delta_vs_bits.png        ← PPL degradation vs FP16 baseline
+        ├── 06_quality_cliff_map.png        ← Heatmap of all metrics
+        ├── 07_cos_vs_ppl_scatter.png       ← Quality vs PPL frontier
+        └── 08_time_vs_ppl.png              ← Speed vs Quality tradeoff
+```
+
+Upon completion of Stage 4, `modal_app.py` automatically downloads the generated plots and `upr_evaluation_report.json` back to your local `results/` folder.
 
 ---
 
@@ -81,139 +197,64 @@ UniversalPrecisionRuntime/
 │   └── test_validator.py
 │
 ├── validate_results.py                     ← CLI schema + cosine bounds validator
-├── idea.md                                 ← Full prototype specification
-├── steps.md                                ← Phase plan
-├── pyproject.toml
-└── setup.py
+├── README.md                               ← Documentation
+├── idea.md                                 ← Prototype specification
+├── pyproject.toml                          ← Dependencies
+└── .gitignore
 ```
 
 ---
 
-## Modal Cloud Deployment & Execution
-
-The entire UPR pipeline runs remotely on **Modal Labs (`modal`)** with GPU acceleration (NVIDIA T4).
-
-### 1. Prerequisites
-
-Make sure you have authenticated Modal CLI locally:
-```bash
-modal setup
-```
-
-Ensure your Hugging Face token is stored in Modal Secrets as `hf-token`:
-```bash
-modal secret create hf-token HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-### 2. Running the Full Pipeline
-
-Run all 4 stages sequentially on Modal with a single command:
-
-```bash
-modal run modal_app.py
-```
-
-### 3. Running Specific Stages
-
-You can also run specific stages on Modal using the `--stage` flag:
-
-```bash
-# Run Stage 1 only (BitPlane Conversion & 16-Bit Verification)
-modal run modal_app.py --stage 1
-
-# Run Stage 2 only (Layer Activation Hooks & Logit Similarity)
-modal run modal_app.py --stage 2
-
-# Run Stage 3 only (16..2 Bit Precision Sweep & WikiText PPL)
-modal run modal_app.py --stage 3
-
-# Run Stage 4 only (Generate 8 Dark-Mode Plots & Competitive Report)
-modal run modal_app.py --stage 4
-```
-
----
-
-## Persistent Data Storage (`upr-data-vol`)
-
-All persistent artifacts are automatically stored inside a persistent **Modal Volume** (`upr-data-vol`) mounted at `/vol`:
-
-```
-Modal Volume (/vol)
-├── models/
-│   └── bitplane_qwen/                      ← BitPlane checkpoint (321 parameter tensors)
-│       ├── metadata.json
-│       └── tensors/
-└── results/
-    ├── reconstruction.csv                  ← Per-tensor MAE, RMSE, CosSim, exact match
-    ├── memory.csv                          ← Per-precision CPU RAM, GPU VRAM, checkpoint size
-    ├── 16bit.json ... 2bit.json            ← Individual precision metrics
-    ├── variable_precision_summary.json     ← Full 8-precision sweep summary
-    ├── upr_evaluation_report.json          ← Complete prototype evaluation report
-    └── plots/                              ← 8 publication-ready dark-mode plots
-        ├── 01_ppl_vs_bits.png
-        ├── 02_cosine_vs_bits.png
-        ├── 03_top1_acc_vs_bits.png
-        ├── 04_recon_time_vs_bits.png
-        ├── 05_ppl_delta_vs_bits.png
-        ├── 06_quality_cliff_map.png
-        ├── 07_cos_vs_ppl_scatter.png
-        └── 08_time_vs_ppl.png
-```
-
-Upon completion of Stage 4, `modal_app.py` automatically syncs the generated plots and `upr_evaluation_report.json` back to your local `results/` folder.
-
----
-
-## `upr` Package API
+## `upr` Package API Reference
 
 ```python
 import upr
 
-# Seed (Fix 10)
+# Set deterministic random seed (Fix 10)
 upr.set_seed(42)
 
 # Convert FP16 model to BitPlane checkpoint
-upr.convert_to_bitplanes(model_or_path="Qwen/Qwen3.5-0.8B", output_directory="/vol/models/bp")
+upr.convert_to_bitplanes(model_or_path="Qwen/Qwen3.5-0.8B", output_directory="/tmp/bp")
 
-# Reconstruct state dict at any precision
+# Reconstruct state dict at any precision level
 state_dict = upr.BitPlaneModel.load_reconstructed_state_dict(
-    bitplane_directory="/vol/models/bp",
+    bitplane_directory="/tmp/bp",
     bits=8,                          # 16, 14, 12, 10, 8, 6, 4, or 2
     export_reconstruction_csv=True,
     original_state_dict=orig_sd,
-    csv_output_path="/vol/results/reconstruction.csv"
+    csv_output_path="results/reconstruction.csv"
 )
 
-# Fix 1 — Verified cosine similarity (bounds asserted)
+# Verified cosine similarity (bounds asserted)
 cos = upr.compute_cosine_similarity(tensor_a, tensor_b)
 
-# Fix 2 — Full numerical metrics
+# Full numerical metrics (MAE, RMSE, KL, MRE, CosSim)
 metrics = upr.compute_numerical_metrics(original_tensor, reconstructed_tensor)
 
-# Fix 6 — Isolated timing
+# Isolated timing per phase
 timer = upr.IsolatedTimer()
 timer.start("reconstruction")
 # ... do work ...
 elapsed = timer.stop("reconstruction")
 
-# Fix 7 — Memory profiling
+# Memory profiling
 profiler = upr.MemoryProfiler()
-profiler.record_memory_snapshot(precision_bits=8, checkpoint_dir="/vol/models/bp", output_csv_path="/vol/results/memory.csv")
+profiler.record_memory_snapshot(precision_bits=8, checkpoint_dir="/tmp/bp", output_csv_path="results/memory.csv")
 
-# Fix 3 — Layer activation comparison
+# Layer activation hooks comparison
 collector = upr.LayerActivationCollector(model)
 collector.register_hooks()
 metrics = upr.compare_layer_activations(orig_collector, recon_collector)
 
-# Fix 11 — Experiment metadata
+# Experiment metadata
 meta = upr.collect_experiment_metadata(precision_bits=8)
 ```
 
 ---
 
-## Validating Results
+## Local Result Validation
 
-You can run the validator CLI against the downloaded `results/` directory:
+You can run the validator script on your locally downloaded `results/` folder:
 
 ```bash
 python validate_results.py results/
