@@ -1,0 +1,35 @@
+{
+  "precision_bits": 8,
+  "dataset": "wikitext-2-raw-v1",
+  "seed": 42,
+  "timing_sec": {
+    "reconstruction": 59.4303,
+    "model_init": 17.2941,
+    "forward_pass": 0.2749,
+    "generation": 2.3778
+  },
+  "memory_stats": {
+    "precision_bits": 8,
+    "cpu_ram_mb": 8373.9,
+    "gpu_vram_mb": 2926.21,
+    "peak_gpu_vram_mb": 4434.91,
+    "checkpoint_size_mb": 1920.37
+  },
+  "logit_cosine_similarity": 0.9729943871498108,
+  "logit_kl_divergence": 3.0332140922546387,
+  "top1_token_accuracy_pct": 32.0,
+  "perplexity": 29.14116859436035,
+  "metadata": {
+    "timestamp": "2026-07-24T12:05:10Z",
+    "git_commit": "unknown",
+    "model_name": "Qwen/Qwen3.5-0.8B",
+    "representation": "bitplane_packed_uint16",
+    "precision_bits": 8,
+    "dataset": "wikitext-2-raw-v1",
+    "seed": 42,
+    "python_version": "3.11.0",
+    "pytorch_version": "2.13.0+cu130",
+    "cuda_available": true,
+    "gpu_device": "Tesla T4"
+  }
+}

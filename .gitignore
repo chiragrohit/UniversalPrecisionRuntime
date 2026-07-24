@@ -42,9 +42,8 @@ env/
 .vscode/
 *.swp
 
-# Model checkpoints & generated evaluation results
+# Model checkpoints & heavy raw weights (results/ tracked for evaluation report)
 models/
-results/
 data/
 *.bin
 *.pt
