@@ -1,7 +1,0 @@
-{
-  "bits": 10,
-  "reconstruction_time_sec": 46.91279482841492,
-  "logit_cosine_similarity": 0.9982950091362,
-  "top1_token_accuracy_pct": 100.0,
-  "perplexity": 24.38953971862793
-}

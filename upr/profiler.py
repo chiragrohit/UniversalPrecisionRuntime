@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 class IsolatedTimer:
     """
-    Fix 6 — Timer module to measure isolated phase durations independently.
+    Fix 6 - Timer module to measure isolated phase durations independently.
     Phases: Conversion Time, Checkpoint Loading Time, Plane Loading Time,
     Reconstruction Time, Model Initialization Time, Forward Pass Time, Generation Time.
     Never reports a combined timing.
@@ -35,7 +35,7 @@ class IsolatedTimer:
 
 class MemoryProfiler:
     """
-    Fix 7 — Memory Profiler recording CPU RAM, GPU VRAM, Original checkpoint size,
+    Fix 7 - Memory Profiler recording CPU RAM, GPU VRAM, Original checkpoint size,
     BitPlane checkpoint size, Bytes loaded, Peak RAM, Peak VRAM, and storing results/memory.csv.
     """
     def __init__(self):
@@ -60,7 +60,7 @@ class MemoryProfiler:
         checkpoint_dir: str,
         output_csv_path: str = "results/memory.csv"
     ) -> Dict[str, Any]:
-        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+        os.makedirs(os.path.dirname(output_csv_path) if os.path.dirname(output_csv_path) else ".", exist_ok=True)
         
         cpu_ram = self.get_cpu_ram_mb()
         gpu_vram = self.get_gpu_vram_mb()

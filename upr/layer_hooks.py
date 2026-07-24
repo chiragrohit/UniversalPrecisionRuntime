@@ -5,7 +5,7 @@ from .numerical import compute_numerical_metrics
 
 class LayerActivationCollector:
     """
-    Fix 3 — Layer Comparison module.
+    Fix 3 - Layer Comparison module.
     Attaches forward hooks to every Transformer block to collect:
     - input activation
     - output activation
@@ -45,7 +45,7 @@ class LayerActivationCollector:
 
 def compare_layer_activations(orig_collector: LayerActivationCollector, recon_collector: LayerActivationCollector) -> Dict[str, Any]:
     """
-    Fix 3 — Compares original vs BitPlane layer-wise activations and stores metrics.
+    Fix 3 - Compares original vs BitPlane layer-wise activations and stores metrics.
     """
     layer_metrics = {}
     common_keys = set(orig_collector.activations.keys()).intersection(set(recon_collector.activations.keys()))

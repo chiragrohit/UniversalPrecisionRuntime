@@ -29,7 +29,7 @@ class BitPlaneModel:
     ) -> Dict[str, torch.Tensor]:
         """
         Loads and reconstructs parameter state dict from a BitPlane directory for requested precision bits.
-        Fix 5 — Stores results/reconstruction.csv with one row per tensor containing torch.equal(), MAE, RMSE, Max Error, Cosine.
+        Fix 5 - Stores results/reconstruction.csv with one row per tensor containing torch.equal(), MAE, RMSE, Max Error, Cosine.
         """
         assert 1 <= bits <= 16, f"bits must be between 1 and 16, got {bits}"
 
@@ -89,7 +89,7 @@ class BitPlaneModel:
                 gc.collect()
 
         if export_reconstruction_csv and csv_rows:
-            os.makedirs(os.path.dirname(csv_output_path), exist_ok=True)
+            os.makedirs(os.path.dirname(csv_output_path) if os.path.dirname(csv_output_path) else ".", exist_ok=True)
             file_exists = os.path.exists(csv_output_path)
             with open(csv_output_path, "a", newline="", encoding="utf-8") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=list(csv_rows[0].keys()))

@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 
 def set_seed(seed: int = 42) -> None:
     """
-    Fix 10 — Fixes Python, NumPy, PyTorch CPU/CUDA, and cuDNN random seeds for 100% deterministic evaluation.
+    Fix 10 - Fixes Python, NumPy, PyTorch CPU/CUDA, and cuDNN random seeds for 100% deterministic evaluation.
     """
     random.seed(seed)
     np.random.seed(seed)
@@ -34,7 +34,7 @@ def collect_experiment_metadata(
     extra_info: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
-    Fix 11 — Automatically stores Git commit, timestamp, representation, precision, dataset,
+    Fix 11 - Automatically stores Git commit, timestamp, representation, precision, dataset,
     seed, model version, system/GPU information, PyTorch and Python versions.
     """
     gpu_info = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "None"

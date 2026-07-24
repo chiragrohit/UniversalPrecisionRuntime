@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 def compute_cosine_similarity(t1: torch.Tensor, t2: torch.Tensor) -> float:
     """
-    Fix 1 — Audit & Cosine Similarity Implementation.
+    Fix 1 - Audit & Cosine Similarity Implementation.
     Uses torch.nn.functional.cosine_similarity on float32 CPU tensors.
     Enforces mathematical bounds assertion: -1.0 - 1e-6 <= cosine <= 1.0 + 1e-6.
     """
@@ -45,7 +45,7 @@ def compute_kl_divergence(p_logits: torch.Tensor, q_logits: torch.Tensor) -> flo
 
 def compute_numerical_metrics(original: torch.Tensor, reconstructed: torch.Tensor) -> Dict[str, Any]:
     """
-    Fix 2 — Numerical Validation Framework module (upr/numerical.py).
+    Fix 2 - Numerical Validation Framework module (upr/numerical.py).
     Computes: MAE, RMSE, Max Absolute Error, Mean Relative Error, Cosine Similarity, KL Divergence.
     """
     orig_f32 = original.detach().to(device="cpu", dtype=torch.float32)

@@ -32,7 +32,7 @@ def extract_bit_plane_np(uint16_arr: np.ndarray, bit_index: int) -> np.ndarray:
 def pack_bit_plane(bit_arr: np.ndarray) -> bytes:
     """
     Packs a 0/1 uint8 numpy array into packed uint8 bytes (8 bits per byte).
-    Fix 8 — Verifies bit packing assertion: 1 bit per bit stored, never 1 byte per bit.
+    Fix 8 - Verifies bit packing assertion: 1 bit per bit stored, never 1 byte per bit.
     """
     flat = bit_arr.ravel()
     num_elements = flat.size
@@ -57,7 +57,7 @@ def unpack_bit_plane(packed_bytes: bytes, num_elements: int, shape: Optional[Tup
 
 def get_packing_stats(num_elements: int, bits_reconstructed: int) -> Dict[str, Any]:
     """
-    Fix 8 — Reports bits stored, bytes stored, and compression ratio.
+    Fix 8 - Reports bits stored, bytes stored, and compression ratio.
     """
     raw_fp16_bytes = num_elements * 2
     packed_bits_bytes = math.ceil(num_elements / 8) * bits_reconstructed

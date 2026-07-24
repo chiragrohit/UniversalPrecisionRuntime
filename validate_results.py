@@ -7,14 +7,14 @@ from typing import List, Dict, Any
 
 def validate_experiment_results(results_dir: str = "results") -> bool:
     """
-    Fix 14 — Experiment Validator CLI script.
+    Fix 14 - Experiment Validator CLI script.
     Checks:
-    ✓ Cosine similarity within [-1.0, 1.0] bounds
-    ✓ No NaN or Inf in outputs
-    ✓ All tensors evaluated
-    ✓ Metrics complete
-    ✓ JSON schema valid
-    ✓ Layer counts correct
+    [OK] Cosine similarity within [-1.0, 1.0] bounds
+    [OK] No NaN or Inf in outputs
+    [OK] All tensors evaluated
+    [OK] Metrics complete
+    [OK] JSON schema valid
+    [OK] Layer counts correct
     """
     print(f"============================================================")
     print(f"RUNNING UPR EXPERIMENT RESULT VALIDATOR: '{results_dir}'")
@@ -70,7 +70,7 @@ def validate_experiment_results(results_dir: str = "results") -> bool:
                 if len(rows) == 0:
                     failures.append("reconstruction.csv is empty!")
                 else:
-                    print(f"✓ Verified reconstruction.csv with {len(rows)} per-tensor entries.")
+                    print(f"[OK] Verified reconstruction.csv with {len(rows)} per-tensor entries.")
         except Exception as e:
             failures.append(f"reconstruction.csv read error: {str(e)}")
 
@@ -78,10 +78,10 @@ def validate_experiment_results(results_dir: str = "results") -> bool:
     if failures:
         print(f"\nVALIDATION FAILED WITH {len(failures)} ERROR(S):")
         for f in failures:
-            print(f"  ❌ {f}")
+            print(f"  [FAIL] {f}")
         return False
     else:
-        print(f"\n✓ ALL VALIDATION CHECKS PASSED SUCCESSFULLY!")
+        print(f"\n[OK] ALL VALIDATION CHECKS PASSED SUCCESSFULLY!")
         return True
 
 if __name__ == "__main__":

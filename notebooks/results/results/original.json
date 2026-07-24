@@ -1,6 +1,0 @@
-{
-  "model_id": "Qwen/Qwen3.5-0.8B",
-  "num_parameters": 752393024,
-  "fp16_size_mb": 1435.0758056640625,
-  "num_tensors": 321
-}
