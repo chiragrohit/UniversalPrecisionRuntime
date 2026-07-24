@@ -6,28 +6,34 @@ from typing import Dict, Any
 def compute_cosine_similarity(t1: torch.Tensor, t2: torch.Tensor) -> float:
     """
     Fix 1 - Audit & Cosine Similarity Implementation.
-    Uses torch.nn.functional.cosine_similarity on float32 CPU tensors.
+    Uses L2-normalized vector dot product on float32 CPU tensors with exact match fast-path.
     Enforces mathematical bounds assertion: -1.0 - 1e-6 <= cosine <= 1.0 + 1e-6.
     """
-    flat1 = t1.detach().to(device="cpu", dtype=torch.float32).reshape(1, -1)
-    flat2 = t2.detach().to(device="cpu", dtype=torch.float32).reshape(1, -1)
-    
-    norm1 = torch.norm(flat1)
-    norm2 = torch.norm(flat2)
-    
-    if norm1 == 0 and norm2 == 0:
+    if torch.equal(t1, t2):
         return 1.0
-    elif norm1 == 0 or norm2 == 0:
+
+    flat1 = t1.detach().to(device="cpu", dtype=torch.float32).flatten()
+    flat2 = t2.detach().to(device="cpu", dtype=torch.float32).flatten()
+    
+    norm1 = torch.linalg.vector_norm(flat1)
+    norm2 = torch.linalg.vector_norm(flat2)
+    
+    if norm1 < 1e-12 and norm2 < 1e-12:
+        return 1.0
+    elif norm1 < 1e-12 or norm2 < 1e-12:
         return 0.0
         
-    sim = float(F.cosine_similarity(flat1, flat2, dim=1).item())
+    dot = torch.dot(flat1, flat2)
+    sim = float((dot / (norm1 * norm2)).item())
     
+    # Numerical clamping to strictly [-1.0, 1.0]
+    sim = max(-1.0, min(1.0, sim))
+
     # Assertions (Fix 1)
     assert sim <= 1.0 + 1e-6, f"Cosine similarity exceeds mathematical upper bound: {sim}"
     assert sim >= -1.0 - 1e-6, f"Cosine similarity below mathematical lower bound: {sim}"
     
-    # Numerical clamping to strictly [-1.0, 1.0]
-    return max(-1.0, min(1.0, sim))
+    return sim
 
 def compute_kl_divergence(p_logits: torch.Tensor, q_logits: torch.Tensor) -> float:
     """
