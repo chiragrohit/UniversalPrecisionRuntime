@@ -1,0 +1,9 @@
+precision_bits,weight_error_mae,activation_error_mae,logit_error_mae,prediction_match_pct
+16,0.0,0.0,0.0,100.0
+14,4.6e-05,nan,0.004665,100.0
+12,0.001178,nan,0.023102,100.0
+10,0.007466,nan,0.137817,90.0
+8,0.029331,nan,0.54248,40.0
+6,0.104534,nan,1.753906,0.0
+4,0.25018,nan,2.324219,0.0
+2,0.29101,nan,2.34375,0.0

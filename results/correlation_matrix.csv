@@ -1,0 +1,6 @@
+metric,precision_bits,perplexity,cosine_similarity,top1_accuracy,kl_divergence
+precision_bits,1.0,-0.7297,0.8608,0.8962,-0.8735
+perplexity,-0.7297,1.0,-0.8872,-0.5671,0.8369
+cosine_similarity,0.8608,-0.8872,1.0,0.7707,-0.9936
+top1_accuracy,0.8962,-0.5671,0.7707,1.0,-0.8058
+kl_divergence,-0.8735,0.8369,-0.9936,-0.8058,1.0

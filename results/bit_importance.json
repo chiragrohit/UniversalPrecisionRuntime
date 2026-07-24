@@ -1,0 +1,165 @@
+{
+  "baseline_ppl": 24.0684,
+  "ablation_results": [
+    {
+      "dropped_plane": 15,
+      "plane_name": "Plane 15 (MSB)",
+      "perplexity": 9999.0,
+      "delta_perplexity": 9974.9316,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.0,
+      "mae": 0.414703,
+      "rmse": 0.551766
+    },
+    {
+      "dropped_plane": 14,
+      "plane_name": "Plane 14",
+      "perplexity": 1847.8782,
+      "delta_perplexity": 1823.8098,
+      "cosine_similarity": 0.853562,
+      "kl_divergence": 40.582741,
+      "mae": 0.163912,
+      "rmse": 0.236432
+    },
+    {
+      "dropped_plane": 13,
+      "plane_name": "Plane 13",
+      "perplexity": 255398.5625,
+      "delta_perplexity": 255374.4941,
+      "cosine_similarity": -0.008425,
+      "kl_divergence": 82.058929,
+      "mae": 0.210145,
+      "rmse": 0.245699
+    },
+    {
+      "dropped_plane": 12,
+      "plane_name": "Plane 12",
+      "perplexity": 291003.3125,
+      "delta_perplexity": 290979.2441,
+      "cosine_similarity": 0.02278,
+      "kl_divergence": 103.243408,
+      "mae": 0.191638,
+      "rmse": 0.224738
+    },
+    {
+      "dropped_plane": 11,
+      "plane_name": "Plane 11",
+      "perplexity": 63950.375,
+      "delta_perplexity": 63926.3066,
+      "cosine_similarity": 0.219795,
+      "kl_divergence": 90.171524,
+      "mae": 0.126769,
+      "rmse": 0.167282
+    },
+    {
+      "dropped_plane": 10,
+      "plane_name": "Plane 10",
+      "perplexity": 2848.2393,
+      "delta_perplexity": 2824.1709,
+      "cosine_similarity": 0.546223,
+      "kl_divergence": 40.713615,
+      "mae": 0.106386,
+      "rmse": 0.15576
+    },
+    {
+      "dropped_plane": 9,
+      "plane_name": "Plane 9",
+      "perplexity": 89.813,
+      "delta_perplexity": 65.7446,
+      "cosine_similarity": 0.853705,
+      "kl_divergence": 12.726781,
+      "mae": 0.047236,
+      "rmse": 0.07723
+    },
+    {
+      "dropped_plane": 8,
+      "plane_name": "Plane 8",
+      "perplexity": 30.4164,
+      "delta_perplexity": 6.3481,
+      "cosine_similarity": 0.959294,
+      "kl_divergence": 4.207119,
+      "mae": 0.027967,
+      "rmse": 0.045655
+    },
+    {
+      "dropped_plane": 7,
+      "plane_name": "Plane 7",
+      "perplexity": 26.1348,
+      "delta_perplexity": 2.0664,
+      "cosine_similarity": 0.986045,
+      "kl_divergence": 1.525111,
+      "mae": 0.014494,
+      "rmse": 0.024153
+    },
+    {
+      "dropped_plane": 6,
+      "plane_name": "Plane 6",
+      "perplexity": 24.9071,
+      "delta_perplexity": 0.8387,
+      "cosine_similarity": 0.996827,
+      "kl_divergence": 0.29694,
+      "mae": 0.007371,
+      "rmse": 0.012442
+    },
+    {
+      "dropped_plane": 5,
+      "plane_name": "Plane 5",
+      "perplexity": 24.3224,
+      "delta_perplexity": 0.254,
+      "cosine_similarity": 0.99912,
+      "kl_divergence": 0.073261,
+      "mae": 0.004067,
+      "rmse": 0.006535
+    },
+    {
+      "dropped_plane": 4,
+      "plane_name": "Plane 4",
+      "perplexity": 24.0625,
+      "delta_perplexity": -0.0059,
+      "cosine_similarity": 0.999858,
+      "kl_divergence": 0.016694,
+      "mae": 0.00222,
+      "rmse": 0.003464
+    },
+    {
+      "dropped_plane": 3,
+      "plane_name": "Plane 3",
+      "perplexity": 24.022,
+      "delta_perplexity": -0.0464,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.00453,
+      "mae": 0.001055,
+      "rmse": 0.00172
+    },
+    {
+      "dropped_plane": 2,
+      "plane_name": "Plane 2",
+      "perplexity": 24.0469,
+      "delta_perplexity": -0.0215,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000331,
+      "mae": 7.8e-05,
+      "rmse": 0.000113
+    },
+    {
+      "dropped_plane": 1,
+      "plane_name": "Plane 1",
+      "perplexity": 24.0607,
+      "delta_perplexity": -0.0077,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000263,
+      "mae": 3.4e-05,
+      "rmse": 5.3e-05
+    },
+    {
+      "dropped_plane": 0,
+      "plane_name": "Plane 0 (LSB)",
+      "perplexity": 24.062,
+      "delta_perplexity": -0.0064,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000208,
+      "mae": 1.2e-05,
+      "rmse": 2.2e-05
+    }
+  ]
+}

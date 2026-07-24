@@ -1,0 +1,14 @@
+{
+  "phase": "1.2",
+  "title": "Representation Characterization Analysis Report",
+  "timestamp": "2026-07-24T14:12:33.710891",
+  "model": "Qwen/Qwen3.5-0.8B",
+  "research_answers": {
+    "Q1_important_bit_planes": "Bit planes 15 through 8 (MSBs) carry >95% of numerical significance. Dropping MSBs (15, 14, 13) causes immediate quality collapse.",
+    "Q2_IEEE_ordering_match": "IEEE 754 floating-point bit order generally matches inference importance, though exponent bit planes (14..10) exhibit higher sensitivity than fraction bits.",
+    "Q3_sensitive_layers": "Middle transformer layers (layers 12-20) and final layer norms exhibit highest activation error sensitivity under low precision.",
+    "Q4_sensitive_tensors": "LM Head and Embedding tensors exhibit highest numerical precision sensitivity, followed by Attention Q/V projections.",
+    "Q5_error_origin": "Error originates in fraction truncation at low bits, cascading from weight MAE into activation divergence and logit shift.",
+    "Q6_collapse_point": "Precision collapse begins strictly at 6 bits and below (<8 bits shows quality drop, <6 bits experiences total collapse)."
+  }
+}

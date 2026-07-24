@@ -1,0 +1,110 @@
+{
+  "baseline_ppl": 24.0684,
+  "sweep_1bit": [
+    {
+      "bits": 16,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.0,
+      "perplexity": 24.0684,
+      "delta_perplexity": 0.0
+    },
+    {
+      "bits": 15,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000208,
+      "perplexity": 24.062,
+      "delta_perplexity": -0.0064
+    },
+    {
+      "bits": 14,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000306,
+      "perplexity": 24.0577,
+      "delta_perplexity": -0.0107
+    },
+    {
+      "bits": 13,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.000473,
+      "perplexity": 24.0388,
+      "delta_perplexity": -0.0296
+    },
+    {
+      "bits": 12,
+      "cosine_similarity": 1.0,
+      "kl_divergence": 0.004472,
+      "perplexity": 24.004,
+      "delta_perplexity": -0.0644
+    },
+    {
+      "bits": 11,
+      "cosine_similarity": 0.999701,
+      "kl_divergence": 0.029202,
+      "perplexity": 24.0241,
+      "delta_perplexity": -0.0443
+    },
+    {
+      "bits": 10,
+      "cosine_similarity": 0.998229,
+      "kl_divergence": 0.148464,
+      "perplexity": 24.3895,
+      "delta_perplexity": 0.3212
+    },
+    {
+      "bits": 9,
+      "cosine_similarity": 0.993307,
+      "kl_divergence": 0.63394,
+      "perplexity": 25.5129,
+      "delta_perplexity": 1.4446
+    },
+    {
+      "bits": 8,
+      "cosine_similarity": 0.972994,
+      "kl_divergence": 3.033214,
+      "perplexity": 29.1412,
+      "delta_perplexity": 5.0728
+    },
+    {
+      "bits": 7,
+      "cosine_similarity": 0.917515,
+      "kl_divergence": 9.632457,
+      "perplexity": 52.3793,
+      "delta_perplexity": 28.3109
+    },
+    {
+      "bits": 6,
+      "cosine_similarity": 0.624038,
+      "kl_divergence": 42.085457,
+      "perplexity": 1354.7736,
+      "delta_perplexity": 1330.7052
+    },
+    {
+      "bits": 5,
+      "cosine_similarity": 0.399035,
+      "kl_divergence": 58.678589,
+      "perplexity": 10687.21,
+      "delta_perplexity": 10663.1416
+    },
+    {
+      "bits": 4,
+      "cosine_similarity": 0.109777,
+      "kl_divergence": 77.566017,
+      "perplexity": 101262.2344,
+      "delta_perplexity": 101238.166
+    },
+    {
+      "bits": 3,
+      "cosine_similarity": 0.041291,
+      "kl_divergence": 78.012802,
+      "perplexity": 133685.5312,
+      "delta_perplexity": 133661.4629
+    },
+    {
+      "bits": 2,
+      "cosine_similarity": 0.0,
+      "kl_divergence": 80.608215,
+      "perplexity": 248319.625,
+      "delta_perplexity": 248295.5566
+    }
+  ]
+}

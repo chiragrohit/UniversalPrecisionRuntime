@@ -10,11 +10,11 @@ def compute_cosine_similarity(t1: torch.Tensor, t2: torch.Tensor) -> float:
     Uses L2-normalized vector dot product on float32 CPU tensors with exact match fast-path.
     Enforces mathematical bounds assertion: -1.0 - 1e-6 <= cosine <= 1.0 + 1e-6.
     """
-    if torch.equal(t1, t2):
-        return 1.0
-
     flat1 = t1.detach().to(device="cpu", dtype=torch.float32).flatten()
     flat2 = t2.detach().to(device="cpu", dtype=torch.float32).flatten()
+
+    if torch.equal(flat1, flat2):
+        return 1.0
     
     norm1 = torch.linalg.vector_norm(flat1)
     norm2 = torch.linalg.vector_norm(flat2)

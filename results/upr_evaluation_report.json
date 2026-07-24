@@ -1,6 +1,6 @@
 {
   "experiment_name": "UPR_Phase1.1_ModalEvaluation",
-  "timestamp": "2026-07-24T13:27:19.699295",
+  "timestamp": "2026-07-24T13:46:44.444418",
   "upr_version": "0.1.0",
   "torch_version": "2.13.0+cu130",
   "cuda_available": true,
@@ -16,14 +16,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 76.9712,
-        "model_init": 15.5911,
-        "forward_pass": 0.4339,
-        "generation": 1.8963
+        "reconstruction": 112.2376,
+        "model_init": 17.8642,
+        "forward_pass": 0.6345,
+        "generation": 2.06
       },
       "memory_stats": {
         "precision_bits": 16,
-        "cpu_ram_mb": 8254.64,
+        "cpu_ram_mb": 8280.06,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -33,7 +33,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.068374633789062,
       "metadata": {
-        "timestamp": "2026-07-24T13:20:48Z",
+        "timestamp": "2026-07-24T13:46:24Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -51,14 +51,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 42.2762,
-        "model_init": 16.06,
-        "forward_pass": 0.277,
-        "generation": 1.8941
+        "reconstruction": 56.68,
+        "model_init": 16.2171,
+        "forward_pass": 0.4021,
+        "generation": 1.9474
       },
       "memory_stats": {
         "precision_bits": 14,
-        "cpu_ram_mb": 8756.65,
+        "cpu_ram_mb": 7625.42,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -68,7 +68,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.057697296142578,
       "metadata": {
-        "timestamp": "2026-07-24T13:21:50Z",
+        "timestamp": "2026-07-24T13:45:22Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -86,14 +86,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 37.9444,
-        "model_init": 15.6313,
-        "forward_pass": 0.2499,
-        "generation": 1.8484
+        "reconstruction": 40.3703,
+        "model_init": 16.1027,
+        "forward_pass": 0.4335,
+        "generation": 1.8847
       },
       "memory_stats": {
         "precision_bits": 12,
-        "cpu_ram_mb": 8610.65,
+        "cpu_ram_mb": 8198.84,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -103,7 +103,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.004018783569336,
       "metadata": {
-        "timestamp": "2026-07-24T13:22:47Z",
+        "timestamp": "2026-07-24T13:45:02Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -121,14 +121,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 30.9403,
-        "model_init": 15.6125,
-        "forward_pass": 0.2488,
-        "generation": 1.88
+        "reconstruction": 35.0941,
+        "model_init": 15.9333,
+        "forward_pass": 0.4886,
+        "generation": 1.8818
       },
       "memory_stats": {
         "precision_bits": 10,
-        "cpu_ram_mb": 8688.65,
+        "cpu_ram_mb": 7994.6,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -138,7 +138,7 @@
       "top1_token_accuracy_pct": 100.0,
       "perplexity": 24.38953971862793,
       "metadata": {
-        "timestamp": "2026-07-24T13:23:38Z",
+        "timestamp": "2026-07-24T13:44:58Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -156,14 +156,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 48.6585,
-        "model_init": 15.5664,
-        "forward_pass": 0.2349,
-        "generation": 1.8616
+        "reconstruction": 64.9561,
+        "model_init": 16.0043,
+        "forward_pass": 0.4866,
+        "generation": 1.8413
       },
       "memory_stats": {
         "precision_bits": 8,
-        "cpu_ram_mb": 8778.39,
+        "cpu_ram_mb": 8290.52,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -173,7 +173,7 @@
       "top1_token_accuracy_pct": 32.0,
       "perplexity": 29.14116859436035,
       "metadata": {
-        "timestamp": "2026-07-24T13:24:46Z",
+        "timestamp": "2026-07-24T13:45:29Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -191,14 +191,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 22.8831,
-        "model_init": 16.0603,
-        "forward_pass": 0.2494,
-        "generation": 1.8604
+        "reconstruction": 35.2783,
+        "model_init": 17.1939,
+        "forward_pass": 0.4133,
+        "generation": 2.0437
       },
       "memory_stats": {
         "precision_bits": 6,
-        "cpu_ram_mb": 8814.65,
+        "cpu_ram_mb": 8213.92,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -208,7 +208,7 @@
       "top1_token_accuracy_pct": 22.0,
       "perplexity": 1354.7735595703125,
       "metadata": {
-        "timestamp": "2026-07-24T13:25:28Z",
+        "timestamp": "2026-07-24T13:45:18Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -226,14 +226,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 40.6786,
-        "model_init": 16.4913,
-        "forward_pass": 0.2609,
-        "generation": 2.0116
+        "reconstruction": 48.1277,
+        "model_init": 17.6468,
+        "forward_pass": 0.7067,
+        "generation": 1.9676
       },
       "memory_stats": {
         "precision_bits": 4,
-        "cpu_ram_mb": 8735.65,
+        "cpu_ram_mb": 8278.47,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -243,7 +243,7 @@
       "top1_token_accuracy_pct": 20.0,
       "perplexity": 101262.234375,
       "metadata": {
-        "timestamp": "2026-07-24T13:26:29Z",
+        "timestamp": "2026-07-24T13:45:27Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",
@@ -261,14 +261,14 @@
       "dataset": "wikitext-2-raw-v1",
       "seed": 42,
       "timing_sec": {
-        "reconstruction": 13.7573,
-        "model_init": 16.3995,
-        "forward_pass": 0.3607,
-        "generation": 1.8801
+        "reconstruction": 18.0806,
+        "model_init": 19.1593,
+        "forward_pass": 0.7956,
+        "generation": 1.8912
       },
       "memory_stats": {
         "precision_bits": 2,
-        "cpu_ram_mb": 8773.65,
+        "cpu_ram_mb": 8176.97,
         "gpu_vram_mb": 2926.21,
         "peak_gpu_vram_mb": 4166.56,
         "checkpoint_size_mb": 1920.37
@@ -278,7 +278,7 @@
       "top1_token_accuracy_pct": 20.0,
       "perplexity": 248319.625,
       "metadata": {
-        "timestamp": "2026-07-24T13:27:03Z",
+        "timestamp": "2026-07-24T13:45:12Z",
         "git_commit": "unknown",
         "model_name": "Qwen/Qwen3.5-0.8B",
         "representation": "bitplane_packed_uint16",

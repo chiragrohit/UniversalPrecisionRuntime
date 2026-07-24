@@ -1,0 +1,29 @@
+{
+  "model": "Qwen/Qwen3.5-0.8B",
+  "dataset": "wikitext-2-raw-v1",
+  "seed": 42,
+  "fp16": {
+    "key": "fp16",
+    "bits": 16,
+    "perplexity": 24.068374633789062,
+    "method": "FP16 (baseline)",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "status": "measured"
+  },
+  "bitsandbytes_4bit": {
+    "key": "bitsandbytes_4bit",
+    "bits": 4,
+    "perplexity": 26.653383255004883,
+    "method": "BitsAndBytes NF4 4-bit",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "status": "measured"
+  },
+  "bitsandbytes_8bit": {
+    "key": "bitsandbytes_8bit",
+    "bits": 8,
+    "perplexity": 24.267433166503906,
+    "method": "BitsAndBytes INT8 8-bit",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "status": "measured"
+  }
+}

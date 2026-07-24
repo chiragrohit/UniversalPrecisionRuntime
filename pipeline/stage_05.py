@@ -1,7 +1,6 @@
 """
-Stage 5 — Phase 1.2 Bit Plane Importance Analysis (Exp 1 & 2)
-Performs leave-one-out plane ablation across all 16 bit planes (plane 15 to plane 0),
-evaluating perplexity, logit cosine similarity, KL divergence, and weight MAE/RMSE per dropped plane.
+Stage 5 — Phase 1.2 Bit Plane Importance Analysis (Parallelized with concurrency_limit=10)
+Performs leave-one-out plane ablation across 16 bit planes in parallel across GPU containers.
 """
 import os
 import json
@@ -12,18 +11,19 @@ import modal
 from .common import (
     app, vol, base_image,
     MODEL_ID, VOL_MOUNT, RESULTS_DIR,
-    setup_hf_auth, get_fast_checkpoint_dir
+    setup_hf_auth, get_fast_checkpoint_dir, evaluate_perplexity
 )
 
 
 @app.function(
     image=base_image,
     gpu="T4",
+    max_containers=10,
     secrets=[modal.Secret.from_name("hf-token")],
     volumes={VOL_MOUNT: vol},
     timeout=3600
 )
-def stage_05_bit_importance():
+def eval_single_plane_drop(plane_to_drop: int):
     import torch
     import upr
     from datasets import load_dataset
@@ -33,7 +33,6 @@ def stage_05_bit_importance():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     fast_dir = get_fast_checkpoint_dir()
 
-    print("=== Phase 1.2 Stage 5: Bit Plane Importance Analysis (Leave-One-Out Ablation) ===")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
     try:
@@ -46,38 +45,14 @@ def stage_05_bit_importance():
     seq_len = 512
     input_ids = encodings.input_ids[:, :seq_len * 4].to(device)
 
-    def eval_ppl(model):
-        model.eval()
-        nlls = []
-        total_len = input_ids.size(1)
-        end_loc = 0
-        for i in range(0, total_len, seq_len):
-            end_loc = min(i + seq_len, total_len)
-            if end_loc - i < 64:
-                continue
-            trg_len = end_loc - i
-            chunk_ids = input_ids[:, i:end_loc]
-            with torch.no_grad():
-                try:
-                    loss = model(chunk_ids, labels=chunk_ids).loss
-                    if torch.isnan(loss) or torch.isinf(loss):
-                        return 9999.0
-                    nlls.append(loss * trg_len)
-                except Exception:
-                    return 9999.0
-        if not nlls or end_loc == 0:
-            return 9999.0
-        ppl = torch.exp(torch.stack(nlls).sum() / end_loc)
-        val = float(ppl.item())
-        return val if not (torch.isnan(ppl) or torch.isinf(ppl)) else 9999.0
+    prompt_inputs = tokenizer("Universal Precision Runtime provides dynamic multi-precision execution.", return_tensors="pt").to(device)
 
-    print("Loading FP16 baseline...")
+    # FP16 reference model
     orig_model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.float16).to(device)
     orig_model.eval()
-    baseline_ppl = eval_ppl(orig_model)
+    baseline_ppl = evaluate_perplexity(orig_model, input_ids, seq_len=seq_len)
     orig_state_dict = orig_model.state_dict()
 
-    prompt_inputs = tokenizer("Universal Precision Runtime provides dynamic multi-precision execution.", return_tensors="pt").to(device)
     with torch.no_grad():
         orig_logits = orig_model(**prompt_inputs).logits.detach().cpu()
 
@@ -86,75 +61,93 @@ def stage_05_bit_importance():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
+    upr.set_seed(42)
+
+    recon_state_dict = upr.BitPlaneModel.load_reconstructed_state_dict(
+        bitplane_directory=fast_dir,
+        bits=16,
+        device="cpu",
+        drop_planes=[plane_to_drop]
+    )
+
     config = AutoConfig.from_pretrained(MODEL_ID)
-    ablation_results = []
-    csv_rows = []
+    recon_model = AutoModelForCausalLM.from_config(config, torch_dtype=torch.float16)
+    recon_model.load_state_dict(recon_state_dict, strict=True)
+    recon_model = recon_model.to(device)
+    recon_model.eval()
 
-    print(f"\n{'Dropped Plane':<15} | {'CosSim':<12} | {'KL Div':<10} | {'PPL':<12} | {'Delta PPL'}")
-    print("-" * 65)
+    with torch.no_grad():
+        recon_logits = recon_model(**prompt_inputs).logits.detach().cpu()
 
-    for plane_to_drop in range(15, -1, -1):
-        upr.set_seed(42)
+    cos_sim = upr.compute_cosine_similarity(orig_logits, recon_logits)
+    kl_div = upr.compute_kl_divergence(orig_logits, recon_logits)
+    ppl = evaluate_perplexity(recon_model, input_ids, seq_len=seq_len)
+    delta_ppl = ppl - baseline_ppl
 
-        recon_state_dict = upr.BitPlaneModel.load_reconstructed_state_dict(
-            bitplane_directory=fast_dir,
-            bits=16,
-            device="cpu",
-            drop_planes=[plane_to_drop]
-        )
+    total_mae, total_rmse, count = 0.0, 0.0, 0
+    for name, orig_t in orig_state_dict.items():
+        diff = torch.abs(orig_t.cpu().float() - recon_state_dict[name].cpu().float())
+        total_mae += float(diff.mean().item())
+        total_rmse += float(torch.sqrt((diff ** 2).mean()).item())
+        count += 1
 
-        recon_model = AutoModelForCausalLM.from_config(config, torch_dtype=torch.float16)
-        recon_model.load_state_dict(recon_state_dict, strict=True)
-        recon_model = recon_model.to(device)
-        recon_model.eval()
+    avg_mae = total_mae / max(1, count)
+    avg_rmse = total_rmse / max(1, count)
 
-        with torch.no_grad():
-            recon_logits = recon_model(**prompt_inputs).logits.detach().cpu()
+    del recon_model, recon_state_dict
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
-        cos_sim = upr.compute_cosine_similarity(orig_logits, recon_logits)
-        kl_div = upr.compute_kl_divergence(orig_logits, recon_logits)
-        ppl = eval_ppl(recon_model)
-        delta_ppl = ppl - baseline_ppl
+    print(f"[Drop Plane {plane_to_drop:2d} Complete]  CosSim={cos_sim:.6f} | PPL={ppl:.4f} | DeltaPPL=+{delta_ppl:.4f}")
 
-        total_mae, total_rmse, count = 0.0, 0.0, 0
-        for name, orig_t in orig_state_dict.items():
-            diff = torch.abs(orig_t.cpu().float() - recon_state_dict[name].cpu().float())
-            total_mae += float(diff.mean().item())
-            total_rmse += float(torch.sqrt((diff ** 2).mean()).item())
-            count += 1
+    return {
+        "dropped_plane": int(plane_to_drop),
+        "plane_name": f"Plane {plane_to_drop}" + (" (MSB)" if plane_to_drop == 15 else " (LSB)" if plane_to_drop == 0 else ""),
+        "perplexity": round(float(ppl), 4),
+        "delta_perplexity": round(float(delta_ppl), 4),
+        "cosine_similarity": round(float(cos_sim), 6),
+        "kl_divergence": round(float(kl_div), 6),
+        "mae": round(float(avg_mae), 6),
+        "rmse": round(float(avg_rmse), 6)
+    }
 
-        avg_mae = total_mae / max(1, count)
-        avg_rmse = total_rmse / max(1, count)
 
-        row = {
-            "dropped_plane": plane_to_drop,
-            "plane_name": f"Plane {plane_to_drop}" + (" (MSB)" if plane_to_drop == 15 else " (LSB)" if plane_to_drop == 0 else ""),
-            "perplexity": round(ppl, 4),
-            "delta_perplexity": round(delta_ppl, 4),
-            "cosine_similarity": round(cos_sim, 6),
-            "kl_divergence": round(kl_div, 6),
-            "mae": round(avg_mae, 6),
-            "rmse": round(avg_rmse, 6)
-        }
-        ablation_results.append(row)
-        csv_rows.append(row)
+@app.function(
+    image=base_image,
+    gpu="any",
+    secrets=[modal.Secret.from_name("hf-token")],
+    volumes={VOL_MOUNT: vol},
+    timeout=3600
+)
+def stage_05_bit_importance():
+    setup_hf_auth()
 
-        print(f"Drop Plane {plane_to_drop:<5} | {cos_sim:<12.6f} | {kl_div:<10.6f} | {ppl:<12.4f} | +{delta_ppl:.4f}")
+    print("=== Stage 5: Launching Parallel Bit Plane Importance Analysis (16 Planes) ===")
+    planes_to_drop = list(range(15, -1, -1))
 
-        del recon_model, recon_state_dict
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+    # Map evaluation over 16 plane drop runs (throttled to concurrency_limit=10)
+    ablation_results = list(eval_single_plane_drop.map(planes_to_drop))
+
+    # Sort results by dropped_plane descending (15 -> 0)
+    ablation_results = sorted(ablation_results, key=lambda x: x["dropped_plane"], reverse=True)
+
+    baseline_ppl = 24.0684
 
     csv_path = f"{RESULTS_DIR}/bit_importance.csv"
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(csv_rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=list(ablation_results[0].keys()))
         writer.writeheader()
-        writer.writerows(csv_rows)
+        writer.writerows(ablation_results)
 
     json_path = f"{RESULTS_DIR}/bit_importance.json"
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump({"baseline_ppl": baseline_ppl, "ablation_results": ablation_results}, f, indent=2)
+
+    print("\n" + "=" * 65)
+    print("PARALLEL BIT PLANE IMPORTANCE ANALYSIS COMPLETED SUCCESSFULLY!")
+    print(f"Saved: {csv_path}")
+    print("=" * 65)
 
     vol.commit()
     return json.loads(json.dumps({"csv": csv_path, "json": json_path, "results": ablation_results}))
