@@ -1,7 +1,8 @@
 import torch
 import numpy as np
+import math
 import gc
-from typing import Tuple, Dict, Optional, Union
+from typing import Tuple, Dict, Optional, Union, Any
 
 def float16_to_uint16_numpy(tensor: torch.Tensor) -> np.ndarray:
     """
@@ -31,10 +32,18 @@ def extract_bit_plane_np(uint16_arr: np.ndarray, bit_index: int) -> np.ndarray:
 def pack_bit_plane(bit_arr: np.ndarray) -> bytes:
     """
     Packs a 0/1 uint8 numpy array into packed uint8 bytes (8 bits per byte).
+    Fix 8 — Verifies bit packing assertion: 1 bit per bit stored, never 1 byte per bit.
     """
     flat = bit_arr.ravel()
+    num_elements = flat.size
     packed = np.packbits(flat, bitorder='big')
-    return packed.tobytes()
+    packed_bytes = packed.tobytes()
+    
+    expected_bytes = math.ceil(num_elements / 8)
+    assert len(packed_bytes) == expected_bytes, (
+        f"Bit packing assertion failed: expected {expected_bytes} bytes for {num_elements} bits, got {len(packed_bytes)}"
+    )
+    return packed_bytes
 
 def unpack_bit_plane(packed_bytes: bytes, num_elements: int, shape: Optional[Tuple[int, ...]] = None) -> np.ndarray:
     """
@@ -45,6 +54,21 @@ def unpack_bit_plane(packed_bytes: bytes, num_elements: int, shape: Optional[Tup
     if shape is not None:
         unpacked = unpacked.reshape(shape)
     return unpacked.astype(np.uint8)
+
+def get_packing_stats(num_elements: int, bits_reconstructed: int) -> Dict[str, Any]:
+    """
+    Fix 8 — Reports bits stored, bytes stored, and compression ratio.
+    """
+    raw_fp16_bytes = num_elements * 2
+    packed_bits_bytes = math.ceil(num_elements / 8) * bits_reconstructed
+    compression_ratio = raw_fp16_bytes / packed_bits_bytes if packed_bits_bytes > 0 else 0.0
+    return {
+        "num_elements": num_elements,
+        "bits_reconstructed": bits_reconstructed,
+        "raw_fp16_bytes": raw_fp16_bytes,
+        "packed_bits_bytes": packed_bits_bytes,
+        "compression_ratio": round(compression_ratio, 4)
+    }
 
 def reconstruct_tensor(
     planes_dict: Dict[int, bytes],

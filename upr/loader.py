@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 import gc
 import torch
 from typing import Optional, Union, Dict, Any
@@ -7,6 +8,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoConfig
 
 from .bit_ops import reconstruct_tensor
+from .numerical import compute_numerical_metrics
 
 class BitPlaneModel:
     """
@@ -20,10 +22,14 @@ class BitPlaneModel:
         cls,
         bitplane_directory: str,
         bits: int = 16,
-        device: Union[str, torch.device] = 'cpu'
+        device: Union[str, torch.device] = 'cpu',
+        export_reconstruction_csv: bool = False,
+        original_state_dict: Optional[Dict[str, torch.Tensor]] = None,
+        csv_output_path: str = "results/reconstruction.csv"
     ) -> Dict[str, torch.Tensor]:
         """
         Loads and reconstructs parameter state dict from a BitPlane directory for requested precision bits.
+        Fix 5 — Stores results/reconstruction.csv with one row per tensor containing torch.equal(), MAE, RMSE, Max Error, Cosine.
         """
         assert 1 <= bits <= 16, f"bits must be between 1 and 16, got {bits}"
 
@@ -39,6 +45,7 @@ class BitPlaneModel:
 
         start_bit = 15
         end_bit = 16 - bits
+        csv_rows = []
 
         for idx, (tensor_name, info) in enumerate(tqdm(tensors_meta.items(), desc=f"Reconstructing ({bits}-bit)")):
             original_shape = tuple(info["shape"])
@@ -60,10 +67,35 @@ class BitPlaneModel:
                 device=device
             )
             del planes_dict  # Free byte buffers immediately
+
+            if export_reconstruction_csv and original_state_dict and tensor_name in original_state_dict:
+                orig_t = original_state_dict[tensor_name]
+                m = compute_numerical_metrics(orig_t, recon_tensor)
+                csv_rows.append({
+                    "tensor_name": tensor_name,
+                    "bits": bits,
+                    "torch_equal": m["torch_equal"],
+                    "mae": m["mae"],
+                    "rmse": m["rmse"],
+                    "max_error": m["max_abs_error"],
+                    "mean_relative_error": m["mean_relative_error"],
+                    "cosine_similarity": m["cosine_similarity"],
+                    "num_elements": m["num_elements"]
+                })
+
             reconstructed_state_dict[tensor_name] = recon_tensor
 
             if idx % 50 == 0:
-                gc.collect()  # Periodically collect garbage every 50 tensors
+                gc.collect()
+
+        if export_reconstruction_csv and csv_rows:
+            os.makedirs(os.path.dirname(csv_output_path), exist_ok=True)
+            file_exists = os.path.exists(csv_output_path)
+            with open(csv_output_path, "a", newline="", encoding="utf-8") as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=list(csv_rows[0].keys()))
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerows(csv_rows)
 
         gc.collect()
         return reconstructed_state_dict
