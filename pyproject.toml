@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "upr"
+version = "0.1.0"
+description = "Universal Precision Runtime - Bit-Plane Checkpoint Runtime"
+requires-python = ">=3.8"
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.22.0",
+    "transformers>=4.36.0",
+    "accelerate>=0.25.0",
+    "tqdm>=4.65.0",
+    "huggingface_hub>=0.19.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0"
+]

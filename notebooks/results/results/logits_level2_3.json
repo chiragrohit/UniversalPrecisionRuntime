@@ -1,0 +1,14 @@
+{
+  "logit_metrics": {
+    "mae": 0.0,
+    "rmse": 0.0,
+    "cosine_similarity": 1.0000977516174316,
+    "kl_divergence": -7.246251243486768e-08
+  },
+  "generation_metrics": {
+    "top1_match": true,
+    "token_accuracy_pct": 100.0,
+    "orig_text": "The key advantage of a single bit-plane representation is that it allows for the efficient representation of the entire data stream. This is because the bit-plane representation is a linear combination of the bit-plane representation of the data stream.\n\nThe bit-plane representation is",
+    "recon_text": "The key advantage of a single bit-plane representation is that it allows for the efficient representation of the entire data stream. This is because the bit-plane representation is a linear combination of the bit-plane representation of the data stream.\n\nThe bit-plane representation is"
+  }
+}
