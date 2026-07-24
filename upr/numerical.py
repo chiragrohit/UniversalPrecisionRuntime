@@ -1,7 +1,8 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Any
+import math
+from typing import Dict, Any, List
 
 def compute_cosine_similarity(t1: torch.Tensor, t2: torch.Tensor) -> float:
     """
@@ -83,3 +84,57 @@ def compute_numerical_metrics(original: torch.Tensor, reconstructed: torch.Tenso
         "kl_divergence": kl_div,
         "num_elements": int(orig_f32.numel())
     }
+
+def compute_plane_entropy(bit_arr: np.ndarray) -> float:
+    """
+    Computes Shannon entropy H = -p0*log2(p0) - p1*log2(p1) for a 0/1 bit array (Exp 6).
+    """
+    if bit_arr.size == 0:
+        return 0.0
+    p1 = float(np.mean(bit_arr))
+    p0 = 1.0 - p1
+    if p0 <= 0 or p1 <= 0:
+        return 0.0
+    return float(-p0 * math.log2(p0) - p1 * math.log2(p1))
+
+def compute_bit_density(bit_arr: np.ndarray) -> Dict[str, float]:
+    """
+    Computes percentage of ones, zeros, and bit density stats (Exp 6).
+    """
+    if bit_arr.size == 0:
+        return {"pct_ones": 0.0, "pct_zeros": 0.0, "entropy": 0.0}
+    p1 = float(np.mean(bit_arr)) * 100.0
+    p0 = 100.0 - p1
+    entropy = compute_plane_entropy(bit_arr)
+    return {
+        "pct_ones": round(p1, 4),
+        "pct_zeros": round(p0, 4),
+        "entropy": round(entropy, 6)
+    }
+
+def compute_correlation_matrix(data_rows: List[Dict[str, float]], keys: List[str]) -> Dict[str, Dict[str, float]]:
+    """
+    Computes Pearson correlation matrix across metrics (Exp 9).
+    """
+    corr_matrix: Dict[str, Dict[str, float]] = {k1: {} for k1 in keys}
+    if not data_rows:
+        return corr_matrix
+
+    data_arrays = {}
+    for k in keys:
+        vals = [float(row.get(k, 0.0)) for row in data_rows]
+        data_arrays[k] = np.array(vals, dtype=np.float64)
+
+    for k1 in keys:
+        for k2 in keys:
+            v1, v2 = data_arrays[k1], data_arrays[k2]
+            std1, std2 = np.std(v1), np.std(v2)
+            if std1 == 0 or std2 == 0:
+                val = 1.0 if k1 == k2 else 0.0
+            else:
+                val = float(np.corrcoef(v1, v2)[0, 1])
+                if np.isnan(val):
+                    val = 0.0
+            corr_matrix[k1][k2] = round(val, 4)
+
+    return corr_matrix

@@ -3,7 +3,7 @@ import json
 import csv
 import gc
 import torch
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union, Dict, Any, List
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoConfig
 
@@ -14,7 +14,7 @@ class BitPlaneModel:
     """
     Universal Precision Runtime (UPR) Model Loader.
     Reconstructs execution models dynamically at requested precision (16, 14, 12, 10, 8, 6, 4, 2 bits)
-    from a single BitPlane checkpoint.
+    or custom bit-plane selections from a single BitPlane checkpoint.
     """
 
     @classmethod
@@ -25,14 +25,15 @@ class BitPlaneModel:
         device: Union[str, torch.device] = 'cpu',
         export_reconstruction_csv: bool = False,
         original_state_dict: Optional[Dict[str, torch.Tensor]] = None,
-        csv_output_path: str = "results/reconstruction.csv"
+        csv_output_path: str = "results/reconstruction.csv",
+        drop_planes: Optional[List[int]] = None,
+        plane_order: Optional[List[int]] = None,
+        target_planes: Optional[List[int]] = None
     ) -> Dict[str, torch.Tensor]:
         """
-        Loads and reconstructs parameter state dict from a BitPlane directory for requested precision bits.
-        Fix 5 - Stores results/reconstruction.csv with one row per tensor containing torch.equal(), MAE, RMSE, Max Error, Cosine.
+        Loads and reconstructs parameter state dict from a BitPlane directory for requested precision bits,
+        or custom plane drop/order configurations (Phase 1.2 Experiments 1 & 2).
         """
-        assert 1 <= bits <= 16, f"bits must be between 1 and 16, got {bits}"
-
         metadata_path = os.path.join(bitplane_directory, "metadata.json")
         if not os.path.exists(metadata_path):
             raise FileNotFoundError(f"metadata.json not found in '{bitplane_directory}'")
@@ -42,17 +43,31 @@ class BitPlaneModel:
 
         reconstructed_state_dict = {}
         tensors_meta = metadata["tensors"]
-
-        start_bit = 15
-        end_bit = 16 - bits
         csv_rows = []
 
-        for idx, (tensor_name, info) in enumerate(tqdm(tensors_meta.items(), desc=f"Reconstructing ({bits}-bit)")):
+        # Determine which planes (0..15) to include
+        if target_planes is not None:
+            active_planes = [b for b in target_planes if 0 <= b <= 15]
+        else:
+            start_bit = 15
+            end_bit = 16 - bits
+            active_planes = list(range(start_bit, end_bit - 1, -1))
+
+        if drop_planes:
+            drop_set = set(drop_planes)
+            active_planes = [b for b in active_planes if b not in drop_set]
+
+        if plane_order:
+            # Reorder according to plane_order if specified
+            order_map = {p: i for i, p in enumerate(plane_order)}
+            active_planes = sorted(active_planes, key=lambda b: order_map.get(b, 99))
+
+        for idx, (tensor_name, info) in enumerate(tqdm(tensors_meta.items(), desc=f"Reconstructing ({bits}-bit, {len(active_planes)} planes)")):
             original_shape = tuple(info["shape"])
             planes_dict = {}
 
-            # Read only the selected MSB plane binary files
-            for b in range(start_bit, end_bit - 1, -1):
+            # Read selected plane binary files
+            for b in active_planes:
                 plane_rel_path = info["planes"][str(b)]
                 plane_full_path = os.path.join(bitplane_directory, plane_rel_path)
 
@@ -108,6 +123,9 @@ class BitPlaneModel:
         base_model_id: Optional[str] = None,
         device_map: Optional[Union[str, Dict[str, Any]]] = None,
         torch_dtype: torch.dtype = torch.float16,
+        drop_planes: Optional[List[int]] = None,
+        plane_order: Optional[List[int]] = None,
+        target_planes: Optional[List[int]] = None,
         **kwargs
     ) -> torch.nn.Module:
         """
@@ -126,7 +144,10 @@ class BitPlaneModel:
         state_dict = cls.load_reconstructed_state_dict(
             bitplane_directory=bitplane_directory,
             bits=bits,
-            device='cpu'
+            device='cpu',
+            drop_planes=drop_planes,
+            plane_order=plane_order,
+            target_planes=target_planes
         )
 
         model.load_state_dict(state_dict, strict=True)

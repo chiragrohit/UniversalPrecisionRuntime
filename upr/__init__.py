@@ -13,11 +13,15 @@ from .numerical import (
     compute_cosine_similarity,
     compute_kl_divergence,
     compute_numerical_metrics,
+    compute_plane_entropy,
+    compute_bit_density,
+    compute_correlation_matrix,
 )
 from .metrics import compute_weight_metrics
 from .metadata import set_seed, collect_experiment_metadata, get_git_commit_hash
 from .profiler import IsolatedTimer, MemoryProfiler
 from .layer_hooks import LayerActivationCollector, compare_layer_activations
+from .analysis import categorize_tensor, analyze_representation_stats
 
 __version__ = "0.1.0"
 __all__ = [
@@ -34,6 +38,9 @@ __all__ = [
     "compute_cosine_similarity",
     "compute_kl_divergence",
     "compute_numerical_metrics",
+    "compute_plane_entropy",
+    "compute_bit_density",
+    "compute_correlation_matrix",
     "set_seed",
     "collect_experiment_metadata",
     "get_git_commit_hash",
@@ -41,4 +48,6 @@ __all__ = [
     "MemoryProfiler",
     "LayerActivationCollector",
     "compare_layer_activations",
+    "categorize_tensor",
+    "analyze_representation_stats",
 ]
